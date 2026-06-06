@@ -6,8 +6,27 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A96245262FD4D9CE00BAC921 /* InventoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245252FD4D9CE00BAC921 /* InventoryViewModel.swift */; };
+		A96245282FD4DA7100BAC921 /* RootViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245272FD4DA7100BAC921 /* RootViews.swift */; };
+		A962452A2FD4DAA600BAC921 /* PersonnelViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245292FD4DAA600BAC921 /* PersonnelViews.swift */; };
+		A962452C2FD4DAC300BAC921 /* InventoryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A962452B2FD4DAC300BAC921 /* InventoryViews.swift */; };
+		A962452E2FD4DAD100BAC921 /* IssueTurnInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A962452D2FD4DAD100BAC921 /* IssueTurnInView.swift */; };
+		A96245302FD4DAE400BAC921 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A962452F2FD4DAE400BAC921 /* ReportsView.swift */; };
+		A96245322FD4DAEE00BAC921 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245312FD4DAEE00BAC921 /* Models.swift */; };
+		A96245342FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		A96245152FD4D82400BAC921 /* ArmorySensitiveItemTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ArmorySensitiveItemTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A96245252FD4D9CE00BAC921 /* InventoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryViewModel.swift; sourceTree = "<group>"; };
+		A96245272FD4DA7100BAC921 /* RootViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViews.swift; sourceTree = "<group>"; };
+		A96245292FD4DAA600BAC921 /* PersonnelViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonnelViews.swift; sourceTree = "<group>"; };
+		A962452B2FD4DAC300BAC921 /* InventoryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryViews.swift; sourceTree = "<group>"; };
+		A962452D2FD4DAD100BAC921 /* IssueTurnInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueTurnInView.swift; sourceTree = "<group>"; };
+		A962452F2FD4DAE400BAC921 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
+		A96245312FD4DAEE00BAC921 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmorySensitiveItemTrackerApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +51,14 @@
 		A962450C2FD4D82400BAC921 = {
 			isa = PBXGroup;
 			children = (
+				A96245252FD4D9CE00BAC921 /* InventoryViewModel.swift */,
+				A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */,
+				A96245272FD4DA7100BAC921 /* RootViews.swift */,
+				A96245292FD4DAA600BAC921 /* PersonnelViews.swift */,
+				A962452B2FD4DAC300BAC921 /* InventoryViews.swift */,
+				A962452D2FD4DAD100BAC921 /* IssueTurnInView.swift */,
+				A962452F2FD4DAE400BAC921 /* ReportsView.swift */,
+				A96245312FD4DAEE00BAC921 /* Models.swift */,
 				A96245172FD4D82400BAC921 /* ArmorySensitiveItemTracker */,
 				A96245162FD4D82400BAC921 /* Products */,
 			);
@@ -82,6 +109,7 @@
 				TargetAttributes = {
 					A96245142FD4D82400BAC921 = {
 						CreatedOnToolsVersion = 26.0.1;
+						LastSwiftMigration = 2600;
 					};
 				};
 			};
@@ -119,6 +147,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A96245282FD4DA7100BAC921 /* RootViews.swift in Sources */,
+				A96245262FD4D9CE00BAC921 /* InventoryViewModel.swift in Sources */,
+				A962452E2FD4DAD100BAC921 /* IssueTurnInView.swift in Sources */,
+				A962452A2FD4DAA600BAC921 /* PersonnelViews.swift in Sources */,
+				A96245302FD4DAE400BAC921 /* ReportsView.swift in Sources */,
+				A962452C2FD4DAC300BAC921 /* InventoryViews.swift in Sources */,
+				A96245342FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift in Sources */,
+				A96245322FD4DAEE00BAC921 /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,6 +285,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -269,6 +306,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -280,6 +318,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
