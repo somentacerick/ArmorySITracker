@@ -12,6 +12,7 @@ import SwiftUI
 //Decides whether the user sees the login screen or the main app tabs
 //Contains login screen, role-based dashboard, dashboard summary cards, navigation links, and logout action
 
+
 struct RootView: View {
     @EnvironmentObject var viewModel: InventoryViewModel
     
@@ -29,7 +30,6 @@ struct LoginView: View {
     
     @State private var username = ""
     @State private var password = ""
-    @State private var selectedRole: UserRole = .companyLeadership
     @State private var useFaceID = false
     
     @State private var showAlert = false
@@ -47,20 +47,11 @@ struct LoginView: View {
                     Toggle("Use Face ID next time", isOn: $useFaceID)
                 }
                 
-                Section("Demo Role") {
-                    Picker("Role", selection: $selectedRole) {
-                        ForEach(UserRole.allCases) { role in
-                            Text(role.rawValue).tag(role)
-                        }
-                    }
-                }
-                
                 Button("Login") {
                     do {
                         try viewModel.login(
                             username: username,
-                            password: password,
-                            role: selectedRole
+                            password: password
                         )
                     } catch {
                         alertMessage = error.localizedDescription
@@ -78,144 +69,260 @@ struct LoginView: View {
     }
 }
 
+enum MainAppTab: String, CaseIterable, Identifiable {
+    case dashboard = "Dashboard"
+    case roster = "Roster"
+    case inventory = "Inventory"
+    case issue = "Issue"
+    case reports = "Reports"
+    case profile = "Profile"
+    
+    var id: String { rawValue }
+    
+    var systemImage: String {
+        switch self {
+        case .dashboard:
+            return "house"
+        case .roster:
+            return "person.3"
+        case .inventory:
+            return "shippingbox"
+        case .issue:
+            return "arrow.left.arrow.right"
+        case .reports:
+            return "chart.bar"
+        case .profile:
+            return "person.crop.circle"
+        }
+    }
+}
+
 struct MainTabView: View {
-    @EnvironmentObject var viewModel: InventoryViewModel
+    @State private var selectedTab: MainAppTab = .dashboard
     
     var body: some View {
-        TabView {
-            NavigationStack {
-                DashboardView()
-            }
-            .tabItem {
-                Label("Dashboard", systemImage: "house")
-            }
-            
-            NavigationStack {
-                PersonnelRosterView()
-            }
-            .tabItem {
-                Label("Roster", systemImage: "person.3")
-            }
-            
-            NavigationStack {
-                CompanyInventoryView()
-            }
-            .tabItem {
-                Label("Inventory", systemImage: "shippingbox")
-            }
-            
-            if viewModel.currentUser?.role.canManageSI == true {
-                NavigationStack {
-                    IssueTurnInView()
+        VStack(spacing: 0) {
+            Group {
+                switch selectedTab {
+                case .dashboard:
+                    NavigationStack {
+                        DashboardView()
+                    }
+                    
+                case .roster:
+                    NavigationStack {
+                        PersonnelRosterView()
+                    }
+                    
+                case .inventory:
+                    NavigationStack {
+                        CompanyInventoryView()
+                    }
+                    
+                case .issue:
+                    NavigationStack {
+                        IssueTurnInView()
+                    }
+                    
+                case .reports:
+                    NavigationStack {
+                        ReportsView()
+                    }
+                    
+                case .profile:
+                    NavigationStack {
+                        ProfileView()
+                    }
                 }
-                .tabItem {
-                    Label("Issue", systemImage: "arrow.left.arrow.right")
-                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            if viewModel.currentUser?.role.canViewReports == true {
-                NavigationStack {
-                    ReportsView()
+            Divider()
+            
+            CustomBottomNavigationBar(selectedTab: $selectedTab)
+        }
+    }
+}
+
+struct CustomBottomNavigationBar: View {
+    @Binding var selectedTab: MainAppTab
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(MainAppTab.allCases) { tab in
+                Button {
+                    selectedTab = tab
+                } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: tab.systemImage)
+                            .font(.system(size: 18))
+                        
+                        Text(tab.rawValue)
+                            .font(.system(size: 10))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .foregroundStyle(selectedTab == tab ? .primary : .secondary)
                 }
-                .tabItem {
-                    Label("Reports", systemImage: "chart.bar")
-                }
+                .buttonStyle(.plain)
             }
         }
+        .background(.thinMaterial)
     }
 }
 
 struct DashboardView: View {
     @EnvironmentObject var viewModel: InventoryViewModel
     
+    private let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    
     var body: some View {
-        List {
-            if let user = viewModel.currentUser {
-                Section("Current User") {
-                    Text(user.username)
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("Dashboard")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 12)
+                
+                if let user = viewModel.currentUser {
+                    NavigationLink {
+                        ProfileView()
+                    } label: {
+                        VStack(spacing: 6) {
+                            Text("Welcome")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                            
+                            Text(user.profileDisplayName)
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                            
+                            Text(user.role.rawValue)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                            
+                            Text("Tap to view or edit profile")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.thinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                LazyVGrid(columns: columns, spacing: 14) {
+                    DashboardSummaryCube(
+                        title: "Total Items",
+                        value: "\(viewModel.items.count)",
+                        systemImage: "shippingbox"
+                    )
                     
-                    Text(user.role.rawValue)
-                        .foregroundStyle(.secondary)
+                    DashboardSummaryCube(
+                        title: "Assigned",
+                        value: "\(viewModel.assignedItems.count)",
+                        systemImage: "checkmark.circle"
+                    )
+                    
+                    DashboardSummaryCube(
+                        title: "Unassigned",
+                        value: "\(viewModel.unassignedItems.count)",
+                        systemImage: "tray"
+                    )
+                    
+                    DashboardSummaryCube(
+                        title: "Missing / Damaged",
+                        value: "\(viewModel.missingOrDamagedItems.count)",
+                        systemImage: "exclamationmark.triangle"
+                    )
                 }
-            }
-            
-            Section("Inventory Summary") {
-                DashboardRow(
-                    title: "Total Items",
-                    value: "\(viewModel.items.count)",
-                    systemImage: "shippingbox"
-                )
                 
-                DashboardRow(
-                    title: "Assigned",
-                    value: "\(viewModel.assignedItems.count)",
-                    systemImage: "checkmark.circle"
-                )
-                
-                DashboardRow(
-                    title: "Unassigned",
-                    value: "\(viewModel.unassignedItems.count)",
-                    systemImage: "tray"
-                )
-                
-                DashboardRow(
-                    title: "Missing/Damaged",
-                    value: "\(viewModel.missingOrDamagedItems.count)",
-                    systemImage: "exclamationmark.triangle"
-                )
-                
-                DashboardRow(
-                    title: "Pending Turn-Ins",
-                    value: "\(viewModel.pendingTurnInItems.count)",
-                    systemImage: "clock"
+                DashboardPendingTurnInCard(
+                    value: "\(viewModel.pendingTurnInItems.count)"
                 )
             }
-            
-            Section("Navigation") {
-                NavigationLink("Personnel Roster") {
-                    PersonnelRosterView()
-                }
-                
-                NavigationLink("Company Inventory") {
-                    CompanyInventoryView()
-                }
-                
-                if viewModel.currentUser?.role.canManageSI == true {
-                    NavigationLink("Issue / Turn In") {
-                        IssueTurnInView()
+            .padding()
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button("Logout", role: .destructive) {
+                        viewModel.logout()
                     }
-                }
-                
-                if viewModel.currentUser?.role.canViewReports == true {
-                    NavigationLink("Reports") {
-                        ReportsView()
-                    }
-                }
-            }
-            
-            Section {
-                Button("Logout", role: .destructive) {
-                    viewModel.logout()
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
             }
         }
-        .navigationTitle("Dashboard")
     }
 }
 
-struct DashboardRow: View {
+struct DashboardSummaryCube: View {
     let title: String
     let value: String
     let systemImage: String
     
     var body: some View {
-        HStack {
-            Label(title, systemImage: systemImage)
+        VStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.title2)
+            
+            Text(value)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            
+            Text(title)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 145)
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+struct DashboardPendingTurnInCard: View {
+    let value: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: "clock.badge.exclamationmark")
+                .font(.largeTitle)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Pending Turn-Ins")
+                    .font(.headline)
+                
+                Text("Items that still need to be returned or cleared.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             
             Spacer()
             
             Text(value)
+                .font(.largeTitle)
                 .fontWeight(.bold)
         }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }

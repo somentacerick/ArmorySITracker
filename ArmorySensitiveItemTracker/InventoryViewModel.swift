@@ -97,7 +97,7 @@ final class InventoryViewModel: ObservableObject {
         items.filter { $0.status == .pendingTurnIn }
     }
     
-    func login(username: String, password: String, role: UserRole) throws {
+    func login(username: String, password: String) throws {
         guard !username.trimmed.isEmpty else {
             throw InventoryError.emptyField("Username")
         }
@@ -108,7 +108,8 @@ final class InventoryViewModel: ObservableObject {
         
         currentUser = AppUser(
             username: username.trimmed,
-            role: role
+            password: password.trimmed,
+            role: .companyOfficer
         )
     }
     
@@ -162,6 +163,86 @@ final class InventoryViewModel: ObservableObject {
             .sorted {
                 $0.itemName < $1.itemName
             }
+    }
+    
+    func updateLoginInformation(
+        username: String,
+        password: String
+    ) throws {
+        guard !username.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Username")
+        }
+        
+        guard !password.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Password")
+        }
+        
+        guard var user = currentUser else {
+            return
+        }
+        
+        user.loginInformation = UserLoginInformation(
+            username: username.trimmed,
+            password: password.trimmed
+        )
+        
+        currentUser = user
+    }
+
+    func updateSoldierProfileInformation(
+        rank: String,
+        firstName: String,
+        lastName: String,
+        company: String,
+        platoon: String,
+        squad: String,
+        team: String,
+        role: UserRole
+    ) throws {
+        guard !rank.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Rank")
+        }
+        
+        guard !firstName.trimmed.isEmpty else {
+            throw InventoryError.emptyField("First name")
+        }
+        
+        guard !lastName.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Last name")
+        }
+        
+        guard !company.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Company")
+        }
+        
+        guard !platoon.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Platoon")
+        }
+        
+        guard !squad.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Squad")
+        }
+        
+        guard !team.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Team")
+        }
+        
+        guard var user = currentUser else {
+            return
+        }
+        
+        user.soldierInformation = UserSoldierInformation(
+            rank: rank.trimmed.uppercased(),
+            firstName: firstName.trimmed,
+            lastName: lastName.trimmed,
+            company: company.trimmed,
+            platoon: platoon.trimmed,
+            squad: squad.trimmed,
+            team: team.trimmed
+        )
+        
+        user.role = role
+        currentUser = user
     }
     
     func addSoldier(

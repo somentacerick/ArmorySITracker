@@ -16,29 +16,40 @@ protocol SearchableRecord {
 }
 
 enum UserRole: String, CaseIterable, Identifiable, Codable {
-    case companyLeadership = "Captain / First Sergeant"
-    case platoonLeadership = "Platoon Leader / Platoon Sergeant"
+    case companyOfficer = "Commander"
+    case companyNCO = "First Sergeant"
+    case platoonOfficer = "Platoon Leader"
+    case platoonNCO = "Platoon Sergeant"
     case squadLeader = "Squad Leader"
     case teamLeader = "Team Leader"
     case soldier = "Soldier"
-    
     case companyArmorer = "Company Armorer"
     case platoonArmorer = "Platoon Armorer"
     
     var id: String { rawValue }
     
     var canEditPersonnel: Bool {
-        switch self {
-        case .companyLeadership, .platoonLeadership, .squadLeader, .teamLeader:
-            return true
-        case .companyArmorer, .platoonArmorer, .soldier:
-            return false
+        var canEditPersonnel: Bool {
+            switch self {
+            case .soldier:
+                return false
+            case .companyOfficer,
+                 .companyNCO,
+                 .platoonOfficer,
+                 .platoonNCO,
+                 .squadLeader,
+                 .teamLeader,
+                 .companyArmorer,
+                 .platoonArmorer:
+                return true
+            }
         }
-    }
-    
+        
     var canManageSI: Bool {
         switch self {
-        case .companyLeadership, .companyArmorer, .platoonLeadership, .platoonArmorer, .squadLeader, .teamLeader:
+        case .companyOfficer, .companyNCO, .companyArmorer,
+             .platoonOfficer, .platoonNCO, .platoonArmorer,
+             .squadLeader, .teamLeader:
             return true
         case .soldier:
             return false
@@ -49,17 +60,150 @@ enum UserRole: String, CaseIterable, Identifiable, Codable {
         self != .soldier
     }
 }
+
+struct UserLoginInformation: Codable, Hashable {
+    var username: String
+    var password: String
+}
+
+struct UserSoldierInformation: Codable, Hashable {
+    var rank: String
+    var firstName: String
+    var lastName: String
+    var company: String
+    var platoon: String
+    var squad: String
+    var team: String
     
+    init(
+        rank: String = "",
+        firstName: String = "",
+        lastName: String = "",
+        company: String = "",
+        platoon: String = "",
+        squad: String = "",
+        team: String = ""
+    ) {
+        self.rank = rank
+        self.firstName = firstName
+        self.lastName = lastName
+        self.company = company
+        self.platoon = platoon
+        self.squad = squad
+        self.team = team
+    }
+    
+    var displayName: String {
+        let cleanRank = rank.trimmed.uppercased()
+        let cleanLast = lastName.trimmed
+        let cleanFirst = firstName.trimmed
+        
+        if cleanRank.isEmpty || cleanLast.isEmpty || cleanFirst.isEmpty {
+            return "Complete Profile"
+        }
+        
+        return "\(cleanRank) \(cleanLast), \(cleanFirst)"
+    }
+    
+    var unitLine: String {
+        let parts = [company, platoon, squad, team].filter {
+            !$0.trimmed.isEmpty
+        }
+        
+        if parts.isEmpty {
+            return "Unit information not set"
+        }
+        
+        return parts.joined(separator: " • ")
+    }
+}
+
 struct AppUser: Identifiable, Codable {
     let id: UUID
-    var username: String
+    var loginInformation: UserLoginInformation
+    var soldierInformation: UserSoldierInformation
     var role: UserRole
     
-    init(id: UUID = UUID(), username: String, role: UserRole) {
+    init(
+        id: UUID = UUID(),
+        username: String,
+        password: String,
+        soldierInformation: UserSoldierInformation = UserSoldierInformation(),
+        role: UserRole = .companyOfficer
+    ) {
         self.id = id
-        self.username = username
+        self.loginInformation = UserLoginInformation(
+            username: username,
+            password: password
+        )
+        self.soldierInformation = soldierInformation
         self.role = role
     }
+    
+    var profileDisplayName: String {
+        soldierInformation.displayName
+    }
+    
+    var username: String {
+        loginInformation.username
+    }
+    
+    var password: String {
+        loginInformation.password
+    }
+}
+
+struct ArmyProfileOptions {
+    static let enlistedRanks = [
+        "PVT",
+        "PV2",
+        "PFC",
+        "SPC",
+        "CPL",
+        "SGT",
+        "SSG",
+        "SFC",
+        "1SG"
+    ]
+    
+    static let officerRanks = [
+        "2LT",
+        "1LT",
+        "CPT"
+    ]
+    
+    static let allRanks = enlistedRanks + officerRanks
+    
+    static let companies = [
+        "Alpha",
+        "Bravo",
+        "Charlie",
+        "Delta",
+        "Echo",
+        "Fox",
+        "HHC"
+    ]
+    
+    static let platoons = [
+        "1st",
+        "2nd",
+        "3rd",
+        "4th",
+        "HQ"
+    ]
+    
+    static let squads = [
+        "1st",
+        "2nd",
+        "3rd",
+        "4th",
+        "Weapons"
+    ]
+    
+    static let teams = [
+        "Alpha",
+        "Bravo"
+    ]
 }
 
 enum ItemCategory: String, CaseIterable, Identifiable, Codable {
