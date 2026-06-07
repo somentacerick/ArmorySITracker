@@ -5,7 +5,7 @@
 //  Created by Erick Somentac on 6/6/26.
 //
 
-import Foundation
+import SwiftUI
 
 
 //Handles the company inventory section

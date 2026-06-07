@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 //Main app logic
 //Manages personnel, inv items, transactions, login state, role permissions, validation, issuing items, turning items in, updating item status, filtering/searching records, and saving/loading local data
@@ -263,7 +264,8 @@ final class InventoryViewModel: ObservableObject {
         itemID: UUID,
         soldierID: UUID,
         condition: ItemCondition,
-        notes: String
+        notes: String,
+        date: Date = Date()
     ) throws {
         guard currentUser?.role.canManageSI == true else {
             throw InventoryError.unauthorized
@@ -303,7 +305,8 @@ final class InventoryViewModel: ObservableObject {
     func turnInItem(
         itemID: UUID,
         condition: ItemCondition,
-        notes: String
+        notes: String,
+        date: Date = Date()
     ) throws {
         guard currentUser?.role.canManageSI == true else {
             throw InventoryError.unauthorized

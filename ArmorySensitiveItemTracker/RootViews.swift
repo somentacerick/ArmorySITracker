@@ -91,7 +91,7 @@ struct MainTabView: View {
             }
             
             NavigationStack {
-                PersonelRosterView()
+                PersonnelRosterView()
             }
             .tabItem {
                 Label("Roster", systemImage: "person.3")

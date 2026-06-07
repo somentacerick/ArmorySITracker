@@ -15,7 +15,6 @@
 		A96245302FD4DAE400BAC921 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A962452F2FD4DAE400BAC921 /* ReportsView.swift */; };
 		A96245322FD4DAEE00BAC921 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245312FD4DAEE00BAC921 /* Models.swift */; };
 		A96245342FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */; };
-		A96245362FD4DF7B00BAC921 /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A96245352FD4DF7B00BAC921 /* Storyboard.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,7 +27,6 @@
 		A962452F2FD4DAE400BAC921 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
 		A96245312FD4DAEE00BAC921 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmorySensitiveItemTrackerApp.swift; sourceTree = "<group>"; };
-		A96245352FD4DF7B00BAC921 /* Storyboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -61,7 +59,6 @@
 				A962452D2FD4DAD100BAC921 /* IssueTurnInView.swift */,
 				A962452F2FD4DAE400BAC921 /* ReportsView.swift */,
 				A96245312FD4DAEE00BAC921 /* Models.swift */,
-				A96245352FD4DF7B00BAC921 /* Storyboard.storyboard */,
 				A96245172FD4D82400BAC921 /* ArmorySensitiveItemTracker */,
 				A96245162FD4D82400BAC921 /* Products */,
 			);
@@ -140,7 +137,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A96245362FD4DF7B00BAC921 /* Storyboard.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

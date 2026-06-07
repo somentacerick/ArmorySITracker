@@ -65,7 +65,7 @@ struct AppUser: Identifiable, Codable {
 enum ItemCategory: String, CaseIterable, Identifiable, Codable {
     case weapon = "Weapon"
     case optic = "Optic"
-    case communicaiton = "Communication"
+    case communication = "Communication"
     case nvg = "Night Vision Goggles"
     case other = "Other"
     
@@ -107,7 +107,7 @@ struct Soldier: Identifiable, Codable, Hashable, SearchableRecord {
     var team: String
     
     var displayName: String {
-        "\(rank) \(lastName,) \(firstName)"
+        "\(rank) \(lastName), \(firstName)"
     }
     
     var unitLine: String {
@@ -135,11 +135,11 @@ struct InventoryItem: Identifiable, Codable, Hashable, SearchableRecord {
     }
 }
 
-struct TransactionRectord: Identifiable, Codable {
+struct TransactionRecord: Identifiable, Codable {
     var id: UUID
     var type: TransactionType
     var itemID: UUID
-    var solderiID: UUID?
+    var soldierID: UUID?
     var date: Date
     var condition: ItemCondition
     var notes: String
@@ -162,5 +162,5 @@ extension String {
     var trimmed: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    }
+}
 

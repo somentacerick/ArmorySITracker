@@ -15,7 +15,7 @@ import SwiftUI
     var body: some Scene {
         WindowGroup{
             RootView()
-                .enviormentObject(viewModel)
+                .environmentObject(viewModel)
         }
     }
 }
