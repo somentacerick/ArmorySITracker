@@ -423,7 +423,7 @@ struct InventoryItem: Identifiable, Codable, Hashable, SearchableRecord {
     var symbolName: String {
         switch category {
         case .weapon:
-            return "fire"
+            return "target"
         case .optic:
             return "eye"
         case .communication:

@@ -7,7 +7,7 @@
 
 import SwiftUI
 import SwiftData
-
+import LocalAuthentication
 
 //Controls app floww
 //Decides whether the user sees the login screen or the main app tabs
@@ -131,6 +131,15 @@ struct LoginView: View {
         }
     }
     
+    private func faceIDUnlockSavedUser() {
+        do {
+            try viewModel.unlockWithSavedUser()
+        } catch {
+            alertMessage = "No saved profile was found. Please log in with username and password first."
+            showAlert = true
+        }
+    }
+    
     private func login() {
         do {
             try viewModel.login(
@@ -144,11 +153,36 @@ struct LoginView: View {
     }
     
     private func faceIDLogin() {
-        // Demo Face ID button
-        login()
+        let context = LAContext()
+        var error: NSError?
+        
+        guard context.canEvaluatePolicy(
+            .deviceOwnerAuthenticationWithBiometrics,
+            error: &error
+        ) else {
+            alertMessage = "Face ID is not available or has not been set up on this device."
+            showAlert = true
+            return
+        }
+        
+        let reason = "Use Face ID to unlock the Armory Sensitive Item Tracker."
+        
+        context.evaluatePolicy(
+            .deviceOwnerAuthenticationWithBiometrics,
+            localizedReason: reason
+        ) { success, authenticationError in
+            DispatchQueue.main.async {
+                if success {
+                    faceIDUnlockSavedUser()
+                } else {
+                    alertMessage = authenticationError?.localizedDescription ?? "Face ID authentication failed."
+                    showAlert = true
+                }
+            }
+        }
     }
 }
-
+    
 enum MainAppTab: String, CaseIterable, Identifiable {
     case dashboard = "Dashboard"
     case roster = "Roster"

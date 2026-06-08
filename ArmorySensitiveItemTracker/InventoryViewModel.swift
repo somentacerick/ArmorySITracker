@@ -1179,4 +1179,18 @@ final class InventoryViewModel: ObservableObject {
             users.append(currentUser)
         }
     }
+    func unlockWithSavedUser() throws {
+        if let currentUser {
+            self.currentUser = currentUser
+            return
+        }
+        
+        if let firstUser = users.first {
+            currentUser = firstUser
+            saveData()
+            return
+        }
+        
+        throw InventoryError.emptyField("Saved profile")
+    }
 }
