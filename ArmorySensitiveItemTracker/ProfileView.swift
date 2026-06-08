@@ -124,7 +124,9 @@ struct ProfileView: View {
                 }
             }
         }
-        .navigationTitle("Profile")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Profile")
         .onAppear {
             loadCurrentUser()
         }

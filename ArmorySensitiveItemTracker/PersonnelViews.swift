@@ -35,7 +35,9 @@ struct PersonnelRosterView: View {
                 }
             }
         }
-        .navigationTitle("Personnel Roster")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Personnel Roster")
         .searchable(text: $searchText, prompt: "Search personnel")
         .toolbar {
             if viewModel.currentUser?.role.canEditPersonnel == true {
@@ -135,7 +137,9 @@ struct SoldierDetailView: View {
                     }
                 }
             }
-            .navigationTitle(soldier.lastName)
+            .scrollContentBackground(.hidden)
+            .background(ArmyTheme.sand.opacity(0.12))
+            .centeredArmyTitle(soldier.lastName)
             .alert("Personnel Action", isPresented: $showAlert) {
                 Button("OK") { }
             } message: {
@@ -243,7 +247,9 @@ struct AddSoldierView: View {
                 }
             }
         }
-        .navigationTitle("Add Soldier")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Add Soldier")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") {
@@ -341,7 +347,9 @@ struct EditSoldierView: View {
                 saveChanges()
             }
         }
-        .navigationTitle("Edit Soldier")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Edit Soldier")
         .onAppear {
             loadSoldier()
         }

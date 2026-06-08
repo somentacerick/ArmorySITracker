@@ -17,6 +17,7 @@
 		A96245342FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */; };
 		A96245382FD6020D00BAC921 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245372FD6020D00BAC921 /* ProfileView.swift */; };
 		A962453C2FD657F000BAC921 /* SwiftDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A962453B2FD657F000BAC921 /* SwiftDataStore.swift */; };
+		A9CD5B412FD683F7000A574A /* ArmyTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9CD5B402FD683F7000A574A /* ArmyTheme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmorySensitiveItemTrackerApp.swift; sourceTree = "<group>"; };
 		A96245372FD6020D00BAC921 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		A962453B2FD657F000BAC921 /* SwiftDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataStore.swift; sourceTree = "<group>"; };
+		A9CD5B402FD683F7000A574A /* ArmyTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmyTheme.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -63,6 +65,7 @@
 				A96245292FD4DAA600BAC921 /* PersonnelViews.swift */,
 				A962452B2FD4DAC300BAC921 /* InventoryViews.swift */,
 				A962452D2FD4DAD100BAC921 /* IssueTurnInView.swift */,
+				A9CD5B402FD683F7000A574A /* ArmyTheme.swift */,
 				A962452F2FD4DAE400BAC921 /* ReportsView.swift */,
 				A96245312FD4DAEE00BAC921 /* Models.swift */,
 				A96245172FD4D82400BAC921 /* ArmorySensitiveItemTracker */,
@@ -161,6 +164,7 @@
 				A962452A2FD4DAA600BAC921 /* PersonnelViews.swift in Sources */,
 				A96245302FD4DAE400BAC921 /* ReportsView.swift in Sources */,
 				A962452C2FD4DAC300BAC921 /* InventoryViews.swift in Sources */,
+				A9CD5B412FD683F7000A574A /* ArmyTheme.swift in Sources */,
 				A96245342FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift in Sources */,
 				A96245322FD4DAEE00BAC921 /* Models.swift in Sources */,
 			);

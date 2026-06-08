@@ -155,7 +155,9 @@ struct ReportsView: View {
                 }
             }
         }
-        .navigationTitle("Reports")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Reports")
         .alert("Inventory Check", isPresented: $showAlert) {
             Button("OK") { }
         } message: {

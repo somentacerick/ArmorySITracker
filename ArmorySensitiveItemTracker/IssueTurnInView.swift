@@ -145,7 +145,9 @@ struct IssueTurnInView: View {
             }
             .disabled(viewModel.currentUser?.role.canManageSI != true)
         }
-        .navigationTitle("Issue / Draw / Turn In")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Issue / Draw / Turn In")
         .onChange(of: mode) {
             resetForm()
         }

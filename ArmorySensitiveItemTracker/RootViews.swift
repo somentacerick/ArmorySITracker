@@ -37,42 +37,115 @@ struct LoginView: View {
     
     @State private var username = ""
     @State private var password = ""
-    @State private var useFaceID = false
     
     @State private var showAlert = false
     @State private var alertMessage = ""
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Login") {
-                    TextField("Username", text: $username)
-                        .textInputAutocapitalization(.never)
-                    
-                    SecureField("Password", text: $password)
-                    
-                    Toggle("Use Face ID next time", isOn: $useFaceID)
-                }
+            ZStack {
+                ArmyTheme.sand.opacity(0.12)
+                    .ignoresSafeArea()
                 
-                Button("Login") {
-                    do {
-                        try viewModel.login(
-                            username: username,
-                            password: password
-                        )
-                    } catch {
-                        alertMessage = error.localizedDescription
-                        showAlert = true
+                VStack(spacing: 24) {
+                    Spacer()
+                    
+                    VStack(spacing: 12) {
+                        Image(systemName: "shield.lefthalf.filled")
+                            .font(.system(size: 80))
+                            .foregroundStyle(ArmyTheme.olive)
+                        
+                        Text("Armory Sensitive Item Tracker")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(ArmyTheme.darkOlive)
+                        
+                        Text("Company Level Accountability")
+                            .font(.subheadline)
+                            .foregroundStyle(ArmyTheme.darkText.opacity(0.75))
                     }
+                    
+                    VStack(spacing: 14) {
+                        TextField("Username", text: $username)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .padding()
+                            .background(ArmyTheme.sand.opacity(0.45))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(ArmyTheme.olive.opacity(0.45), lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        
+                        SecureField("Password", text: $password)
+                            .padding()
+                            .background(ArmyTheme.sand.opacity(0.45))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(ArmyTheme.olive.opacity(0.45), lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .padding(.horizontal)
+                    
+                    VStack(spacing: 12) {
+                        Button {
+                            login()
+                        } label: {
+                            Text("Login")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(ArmyTheme.olive)
+                                .foregroundStyle(ArmyTheme.sand)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        
+                        Button {
+                            faceIDLogin()
+                        } label: {
+                            Label("Face ID", systemImage: "faceid")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(ArmyTheme.darkOlive)
+                                .foregroundStyle(ArmyTheme.sand)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer()
                 }
+                .padding()
             }
-            .navigationTitle("Armory Tracker")
+            .scrollContentBackground(.hidden)
+            .background(ArmyTheme.sand.opacity(0.12))
+            .centeredArmyTitle("Login")
             .alert("Login Error", isPresented: $showAlert) {
                 Button("OK") { }
             } message: {
                 Text(alertMessage)
             }
         }
+    }
+    
+    private func login() {
+        do {
+            try viewModel.login(
+                username: username,
+                password: password
+            )
+        } catch {
+            alertMessage = error.localizedDescription
+            showAlert = true
+        }
+    }
+    
+    private func faceIDLogin() {
+        // Demo Face ID button
+        login()
     }
 }
 
@@ -143,8 +216,10 @@ struct MainTabView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(ArmyTheme.sand.opacity(0.12))
             
             Divider()
+                .background(ArmyTheme.olive)
             
             CustomBottomNavigationBar(selectedTab: $selectedTab)
         }
@@ -171,15 +246,16 @@ struct CustomBottomNavigationBar: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .foregroundStyle(selectedTab == tab ? .primary : .secondary)
+                    .foregroundStyle(
+                        selectedTab == tab ? ArmyTheme.sand : ArmyTheme.tan.opacity(0.8)
+                    )
                 }
                 .buttonStyle(.plain)
             }
         }
-        .background(.thinMaterial)
+        .background(ArmyTheme.darkOlive)
     }
 }
-
 struct DashboardView: View {
     @EnvironmentObject var viewModel: InventoryViewModel
     
@@ -191,11 +267,6 @@ struct DashboardView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("Dashboard")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, 12)
                 
                 if let user = viewModel.currentUser {
                     NavigationLink {
@@ -261,7 +332,7 @@ struct DashboardView: View {
             }
             .padding()
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .centeredArmyTitle("Dashboard")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -299,7 +370,11 @@ struct DashboardSummaryCube: View {
         .frame(maxWidth: .infinity)
         .frame(height: 145)
         .padding()
-        .background(.thinMaterial)
+        .background(ArmyTheme.sand.opacity(0.35))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(ArmyTheme.olive.opacity(0.45), lineWidth: 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
@@ -311,14 +386,16 @@ struct DashboardPendingTurnInCard: View {
         HStack(spacing: 16) {
             Image(systemName: "clock.badge.exclamationmark")
                 .font(.largeTitle)
+                .foregroundStyle(ArmyTheme.warning)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Pending Turn-Ins")
+                Text("Pending Turn Ins")
                     .font(.headline)
+                    .foregroundStyle(ArmyTheme.darkOlive)
                 
                 Text("Items that still need to be returned or cleared.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(ArmyTheme.darkText.opacity(0.8))
             }
             
             Spacer()
@@ -326,10 +403,16 @@ struct DashboardPendingTurnInCard: View {
             Text(value)
                 .font(.largeTitle)
                 .fontWeight(.bold)
+                .foregroundStyle(ArmyTheme.darkOlive)
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(.thinMaterial)
+        .background(ArmyTheme.tan.opacity(0.35))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(ArmyTheme.olive.opacity(0.5), lineWidth: 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
+

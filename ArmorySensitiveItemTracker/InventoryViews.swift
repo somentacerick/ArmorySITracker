@@ -71,7 +71,9 @@ struct CompanyInventoryView: View {
                 }
             }
         }
-        .navigationTitle("Company Inventory")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Company Inventory")
         .searchable(text: $searchText, prompt: "Search serial number or item")
         .toolbar {
             if viewModel.currentUser?.role.canManageSI == true {
@@ -277,7 +279,9 @@ struct ItemDetailView: View {
                     }
                 }
             }
-            .navigationTitle(item.itemName)
+            .scrollContentBackground(.hidden)
+            .background(ArmyTheme.sand.opacity(0.12))
+            .centeredArmyTitle(item.itemName)
             .alert("Inventory Action", isPresented: $showAlert) {
                 Button("OK") { }
             } message: {
@@ -379,7 +383,9 @@ struct AddItemView: View {
                 }
             }
         }
-        .navigationTitle("Add Item")
+        .scrollContentBackground(.hidden)
+        .background(ArmyTheme.sand.opacity(0.12))
+        .centeredArmyTitle("Add Item")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") {
