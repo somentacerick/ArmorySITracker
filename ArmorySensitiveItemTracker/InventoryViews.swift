@@ -48,7 +48,7 @@ struct CompanyInventoryView: View {
             }
             
             Section("Inventory Items") {
-                let filteredItems = viewModel.filteredItems(
+                let filteredItems = viewModel.filteredVisibleItems(
                     searchText: searchText,
                     status: statusFilter,
                     category: categoryFilter
@@ -95,37 +95,49 @@ struct ItemRowView: View {
     let assignedSoldier: Soldier?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(item.itemName)
-                .font(.headline)
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: item.symbolName)
+                .font(.title2)
+                .frame(width: 32)
             
-            Text("Serial: \(item.serialNumber)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            
-            Text("Category: \(item.category.rawValue)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            
-            if let assignedSoldier {
-                Text("Assigned To: \(assignedSoldier.displayName)")
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.itemName)
+                    .font(.headline)
+                
+                if item.category == .other {
+                    Text(item.quantityDisplay)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Serial: \(item.serialNumber)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Text("Category: \(item.category.rawValue)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            } else {
-                Text("Assigned To: Unassigned")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            
-            HStack {
-                Text("Status: \(item.status.rawValue)")
-                    .font(.caption)
-                    .fontWeight(.semibold)
                 
-                Spacer()
+                if let assignedSoldier {
+                    Text("Assigned To: \(assignedSoldier.displayName)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Assigned To: Unassigned")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 
-                Text(item.condition.rawValue)
-                    .font(.caption)
+                HStack {
+                    Text("Status: \(item.status.rawValue)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                    
+                    Spacer()
+                    
+                    Text(item.condition.rawValue)
+                        .font(.caption)
+                }
             }
         }
     }
@@ -289,20 +301,45 @@ struct AddItemView: View {
     @State private var category: ItemCategory = .weapon
     @State private var condition: ItemCondition = .serviceable
     @State private var notes = ""
+    @State private var quantity = 1
     
     @State private var showAlert = false
     @State private var alertMessage = ""
     
+    private var availableItemNames: [String] {
+        InventoryCatalogOptions.itemNames(for: category)
+    }
+    
     var body: some View {
         Form {
             Section("Item Information") {
-                TextField("Item Name", text: $itemName)
-                TextField("Serial Number", text: $serialNumber)
-                
                 Picker("Category", selection: $category) {
                     ForEach(ItemCategory.allCases) { category in
                         Text(category.rawValue).tag(category)
                     }
+                }
+                .onChange(of: category) {
+                    itemName = ""
+                    serialNumber = ""
+                    quantity = 1
+                }
+                
+                Picker("Item Name", selection: $itemName) {
+                    Text("Select Item").tag("")
+                    
+                    ForEach(availableItemNames, id: \.self) { item in
+                        Text(item).tag(item)
+                    }
+                }
+                
+                if category == .other {
+                    Stepper("Quantity: \(quantity)", value: $quantity, in: 1...999)
+                    
+                    Text("Non serialized sensitive items use quantity instead of serial number.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    TextField("Serial Number", text: $serialNumber)
                 }
                 
                 Picker("Condition", selection: $condition) {
@@ -324,7 +361,8 @@ struct AddItemView: View {
                         serialNumber: serialNumber,
                         category: category,
                         condition: condition,
-                        notes: notes
+                        notes: notes,
+                        quantity: category == .other ? quantity : nil
                     )
                     
                     dismiss()

@@ -29,27 +29,31 @@ enum UserRole: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
     
     var canEditPersonnel: Bool {
-        var canEditPersonnel: Bool {
-            switch self {
-            case .soldier:
-                return false
-            case .companyOfficer,
-                 .companyNCO,
-                 .platoonOfficer,
-                 .platoonNCO,
-                 .squadLeader,
-                 .teamLeader,
-                 .companyArmorer,
-                 .platoonArmorer:
-                return true
-            }
+        switch self {
+        case .soldier:
+            return false
+        case .companyOfficer,
+             .companyNCO,
+             .platoonOfficer,
+             .platoonNCO,
+             .squadLeader,
+             .teamLeader,
+             .companyArmorer,
+             .platoonArmorer:
+            return true
         }
-        
+    }
+    
     var canManageSI: Bool {
         switch self {
-        case .companyOfficer, .companyNCO, .companyArmorer,
-             .platoonOfficer, .platoonNCO, .platoonArmorer,
-             .squadLeader, .teamLeader:
+        case .companyOfficer,
+             .companyNCO,
+             .companyArmorer,
+             .platoonOfficer,
+             .platoonNCO,
+             .platoonArmorer,
+             .squadLeader,
+             .teamLeader:
             return true
         case .soldier:
             return false
@@ -74,6 +78,7 @@ struct UserSoldierInformation: Codable, Hashable {
     var platoon: String
     var squad: String
     var team: String
+    var position: String
     
     init(
         rank: String = "",
@@ -82,7 +87,8 @@ struct UserSoldierInformation: Codable, Hashable {
         company: String = "",
         platoon: String = "",
         squad: String = "",
-        team: String = ""
+        team: String = "",
+        position: String = ""
     ) {
         self.rank = rank
         self.firstName = firstName
@@ -91,6 +97,7 @@ struct UserSoldierInformation: Codable, Hashable {
         self.platoon = platoon
         self.squad = squad
         self.team = team
+        self.position = position
     }
     
     var displayName: String {
@@ -106,7 +113,7 @@ struct UserSoldierInformation: Codable, Hashable {
     }
     
     var unitLine: String {
-        let parts = [company, platoon, squad, team].filter {
+        let parts = [company, platoon, squad, team, position].filter {
             !$0.trimmed.isEmpty
         }
         
@@ -123,13 +130,15 @@ struct AppUser: Identifiable, Codable {
     var loginInformation: UserLoginInformation
     var soldierInformation: UserSoldierInformation
     var role: UserRole
+    var linkedSoldierID: UUID?
     
     init(
         id: UUID = UUID(),
         username: String,
         password: String,
         soldierInformation: UserSoldierInformation = UserSoldierInformation(),
-        role: UserRole = .companyOfficer
+        role: UserRole = .companyOfficer,
+        linkedSoldierID: UUID? = nil
     ) {
         self.id = id
         self.loginInformation = UserLoginInformation(
@@ -138,6 +147,7 @@ struct AppUser: Identifiable, Codable {
         )
         self.soldierInformation = soldierInformation
         self.role = role
+        self.linkedSoldierID = linkedSoldierID
     }
     
     var profileDisplayName: String {
@@ -204,6 +214,115 @@ struct ArmyProfileOptions {
         "Alpha",
         "Bravo"
     ]
+    
+    static let positions = [
+        "Team Leader",
+        "Automatic Rifleman",
+        "Grenadier",
+        "Rifleman",
+        "Machine Gunner",
+        "Assistant Gunner",
+        "Medic",
+        "Squad Leader",
+        "Platoon Leader",
+        "Platoon Sergeant",
+        "Commander",
+        "1st Sergeant"
+    ]
+}
+
+struct RankAuthority {
+    static let rankOrder: [String: Int] = [
+        "PVT": 1,
+        "PV2": 2,
+        "PFC": 3,
+        "SPC": 4,
+        "CPL": 5,
+        "SGT": 6,
+        "SSG": 7,
+        "SFC": 8,
+        "1SG": 9,
+        "2LT": 10,
+        "1LT": 11,
+        "CPT": 12
+    ]
+    
+    static func level(for rank: String) -> Int {
+        rankOrder[rank.trimmed.uppercased()] ?? 0
+    }
+    
+    static func allowedRanks(upTo currentUserRank: String) -> [String] {
+        let currentLevel = level(for: currentUserRank)
+        
+        if currentLevel == 0 {
+            return ArmyProfileOptions.allRanks
+        }
+        
+        return ArmyProfileOptions.allRanks.filter {
+            level(for: $0) <= currentLevel
+        }
+    }
+}
+
+struct InventoryCatalogOptions {
+    static let weapons = [
+        "M4A1 Carbine",
+        "M9",
+        "M17",
+        "M110",
+        "M320",
+        "M249",
+        "M240",
+        "AT4",
+        "M72 LAW"
+    ]
+    
+    static let communications = [
+        "Harris AN/PRC-163",
+        "ATAK"
+    ]
+    
+    static let nightVision = [
+        "PVS-14",
+        "NVG-40",
+        "PVS-31",
+        "AN/PSQ-20"
+    ]
+    
+    static let optics = [
+        "M68 CCO",
+        "EOTECH",
+        "ACOG",
+        "LPVO",
+        "Vortex XM157"
+    ]
+    
+    static let other = [
+        "Radio Battery",
+        "M4A1 Magazine",
+        "M17 Magazine",
+        "M110 Magazine",
+        "M249 Drum Magazine",
+        "M240 Drum Magazine",
+        "M249 Barrel",
+        "M240 Barrel",
+        "M9 Magazine"
+    ]
+    
+    static func itemNames(for category: ItemCategory) -> [String] {
+        switch category {
+        case .weapon:
+            return weapons
+        case .optic:
+            return optics
+        case .communication:
+            return communications
+        case .nvg:
+            return nightVision
+        case .other:
+            return other
+        }
+    }
 }
 
 enum ItemCategory: String, CaseIterable, Identifiable, Codable {
@@ -249,17 +368,23 @@ struct Soldier: Identifiable, Codable, Hashable, SearchableRecord {
     var platoon: String
     var squad: String
     var team: String
+    var position: String
+    var role: UserRole
     
     var displayName: String {
         "\(rank) \(lastName), \(firstName)"
     }
     
     var unitLine: String {
-        "\(company) • \(platoon) • \(squad) • \(team)"
+        let parts = [company, platoon, squad, team, position].filter {
+            !$0.trimmed.isEmpty
+        }
+        
+        return parts.joined(separator: " • ")
     }
     
     var searchableText: String {
-        "\(rank) \(firstName) \(lastName) \(platoon) \(squad) \(team)"
+        "\(rank) \(firstName) \(lastName) \(company) \(platoon) \(squad) \(team) \(position) \(role.rawValue)"
     }
 }
 
@@ -273,9 +398,33 @@ struct InventoryItem: Identifiable, Codable, Hashable, SearchableRecord {
     var condition: ItemCondition
     var issueDate: Date?
     var notes: String
+    var quantity: Int?
     
     var searchableText: String {
         "\(itemName) \(serialNumber) \(category.rawValue) \(status.rawValue) \(condition.rawValue) \(notes)"
+    }
+    
+    var quantityDisplay: String {
+        if let quantity {
+            return "Qty: \(quantity)"
+        }
+        
+        return "Serialized Item"
+    }
+    
+    var symbolName: String {
+        switch category {
+        case .weapon:
+            return "gun"
+        case .optic:
+            return "eye"
+        case .communication:
+            return "antenna.radiowaves.left.and.right"
+        case .nvg:
+            return "binoculars"
+        case .other:
+            return "number.square"
+        }
     }
 }
 
@@ -307,4 +456,3 @@ extension String {
         trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
-

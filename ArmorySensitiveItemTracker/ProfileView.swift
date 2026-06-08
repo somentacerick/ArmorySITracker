@@ -25,6 +25,7 @@ struct ProfileView: View {
     @State private var platoon = ""
     @State private var squad = ""
     @State private var team = ""
+    @State private var position = ""
     
     @State private var selectedRole: UserRole = .companyOfficer
     
@@ -91,6 +92,13 @@ struct ProfileView: View {
                         Text(team).tag(team)
                     }
                 }
+                
+                Picker("Position", selection: $position) {
+                    Text("Select Position").tag("")
+                    
+                    ForEach(ArmyProfileOptions.positions, id: \.self) { position in
+                        Text(position).tag(position)}
+                }
             }
             
             Section("App Role / Permissions") {
@@ -148,7 +156,7 @@ struct ProfileView: View {
     }
     
     private var unitPreview: String {
-        let parts = [company, platoon, squad, team].filter {
+        let parts = [company, platoon, squad, team, position].filter {
             !$0.trimmed.isEmpty
         }
         
@@ -174,6 +182,7 @@ struct ProfileView: View {
         platoon = user.soldierInformation.platoon
         squad = user.soldierInformation.squad
         team = user.soldierInformation.team
+        position = user.soldierInformation.position
         
         selectedRole = user.role
     }
@@ -206,6 +215,7 @@ struct ProfileView: View {
                 platoon: platoon,
                 squad: squad,
                 team: team,
+                position: position,
                 role: selectedRole
             )
             

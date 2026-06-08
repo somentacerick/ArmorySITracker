@@ -44,6 +44,7 @@ struct SavedInventoryData: Codable {
     var soldiers: [Soldier]
     var items: [InventoryItem]
     var transactions: [TransactionRecord]
+    var currentUser: AppUser?
 }
 
 final class InventoryStorage {
@@ -111,6 +112,8 @@ final class InventoryViewModel: ObservableObject {
             password: password.trimmed,
             role: .companyOfficer
         )
+        
+        saveData()
     }
     
     func logout() {
@@ -187,8 +190,9 @@ final class InventoryViewModel: ObservableObject {
         )
         
         currentUser = user
+        saveData()
     }
-
+    
     func updateSoldierProfileInformation(
         rank: String,
         firstName: String,
@@ -197,6 +201,7 @@ final class InventoryViewModel: ObservableObject {
         platoon: String,
         squad: String,
         team: String,
+        position: String,
         role: UserRole
     ) throws {
         guard !rank.trimmed.isEmpty else {
@@ -227,6 +232,10 @@ final class InventoryViewModel: ObservableObject {
             throw InventoryError.emptyField("Team")
         }
         
+        guard !position.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Position")
+        }
+        
         guard var user = currentUser else {
             return
         }
@@ -238,11 +247,45 @@ final class InventoryViewModel: ObservableObject {
             company: company.trimmed,
             platoon: platoon.trimmed,
             squad: squad.trimmed,
-            team: team.trimmed
+            team: team.trimmed,
+            position: position.trimmed
         )
         
         user.role = role
         currentUser = user
+        
+        syncCurrentUserToPersonnelRoster()
+        saveData()
+    }
+    
+    private func syncCurrentUserToPersonnelRoster() {
+        guard var user = currentUser else {
+            return
+        }
+        
+        let soldierInfo = user.soldierInformation
+        
+        let syncedSoldier = Soldier(
+            id: user.linkedSoldierID ?? UUID(),
+            rank: soldierInfo.rank,
+            firstName: soldierInfo.firstName,
+            lastName: soldierInfo.lastName,
+            company: soldierInfo.company,
+            platoon: soldierInfo.platoon,
+            squad: soldierInfo.squad,
+            team: soldierInfo.team,
+            position: soldierInfo.position,
+            role: user.role
+        )
+        
+        if let linkedSoldierID = user.linkedSoldierID,
+           let index = soldiers.firstIndex(where: { $0.id == linkedSoldierID }) {
+            soldiers[index] = syncedSoldier
+        } else {
+            soldiers.append(syncedSoldier)
+            user.linkedSoldierID = syncedSoldier.id
+            currentUser = user
+        }
     }
     
     func addSoldier(
@@ -252,7 +295,9 @@ final class InventoryViewModel: ObservableObject {
         company: String,
         platoon: String,
         squad: String,
-        team: String
+        team: String,
+        position: String,
+        role: UserRole = .soldier
     ) throws {
         guard currentUser?.role.canEditPersonnel == true else {
             throw InventoryError.unauthorized
@@ -285,6 +330,9 @@ final class InventoryViewModel: ObservableObject {
             throw InventoryError.emptyField("Team")
         }
         
+        guard !position.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Position")
+        }
         let soldier = Soldier(
             id: UUID(),
             rank: rank.trimmed.uppercased(),
@@ -293,7 +341,9 @@ final class InventoryViewModel: ObservableObject {
             company: company.trimmed,
             platoon: platoon.trimmed,
             squad: squad.trimmed,
-            team: team.trimmed
+            team: team.trimmed,
+            position: position.trimmed,
+            role: role
         )
         
         soldiers.append(soldier)
@@ -305,7 +355,8 @@ final class InventoryViewModel: ObservableObject {
         serialNumber: String,
         category: ItemCategory,
         condition: ItemCondition,
-        notes: String
+        notes: String,
+        quantity: Int? = nil
     ) throws {
         guard currentUser?.role.canManageSI == true else {
             throw InventoryError.unauthorized
@@ -315,26 +366,35 @@ final class InventoryViewModel: ObservableObject {
             throw InventoryError.emptyField("Item name")
         }
         
-        guard !serialNumber.trimmed.isEmpty else {
-            throw InventoryError.emptyField("Serial number")
+        if category == .other {
+            guard let quantity, quantity > 0 else {
+                throw InventoryError.emptyField("Quantity")
+            }
+        } else {
+            guard !serialNumber.trimmed.isEmpty else {
+                throw InventoryError.emptyField("Serial number")
+            }
         }
         
         let cleanSerial = serialNumber.trimmed.uppercased()
         
-        guard !items.contains(where: { $0.serialNumber.uppercased() == cleanSerial }) else {
-            throw InventoryError.duplicateSerial
+        if category != .other {
+            guard !items.contains(where: { $0.serialNumber.uppercased() == cleanSerial }) else {
+                throw InventoryError.duplicateSerial
+            }
         }
         
         let item = InventoryItem(
             id: UUID(),
             itemName: itemName.trimmed,
-            serialNumber: cleanSerial,
+            serialNumber: category == .other ? "N/A" : cleanSerial,
             category: category,
             status: .unassigned,
             assignedSoldierID: nil,
             condition: condition,
             issueDate: nil,
-            notes: notes.trimmed
+            notes: notes.trimmed,
+            quantity: category == .other ? quantity : nil
         )
         
         items.append(item)
@@ -454,26 +514,28 @@ final class InventoryViewModel: ObservableObject {
     }
     
     private func loadData() {
-            if let savedData = storage.load() {
-                soldiers = savedData.soldiers
-                items = savedData.items
-                transactions = savedData.transactions
-            } else {
-                loadSampleData()
-                saveData()
-            }
+        if let savedData = storage.load() {
+            soldiers = savedData.soldiers
+            items = savedData.items
+            transactions = savedData.transactions
+            currentUser = savedData.currentUser
+        } else {
+            loadSampleData()
+            saveData()
         }
+    }
+    
+    private func saveData() {
+        let data = SavedInventoryData(
+            soldiers: soldiers,
+            items: items,
+            transactions: transactions,
+            currentUser: currentUser
+        )
         
-        private func saveData() {
-            let data = SavedInventoryData(
-                soldiers: soldiers,
-                items: items,
-                transactions: transactions
-            )
-            
-            try? storage.save(data)
-        }
-        
+        try? storage.save(data)
+    }
+    
     private func loadSampleData() {
         let soldierOne = Soldier(
             id: UUID(),
@@ -483,7 +545,9 @@ final class InventoryViewModel: ObservableObject {
             company: "A CO",
             platoon: "1st PLT",
             squad: "1st Squad",
-            team: "Alpha Team"
+            team: "Alpha Team",
+            position: "Team Leader",
+            role: .teamLeader
         )
         
         let soldierTwo = Soldier(
@@ -494,7 +558,9 @@ final class InventoryViewModel: ObservableObject {
             company: "A CO",
             platoon: "1st PLT",
             squad: "2nd Squad",
-            team: "Bravo Team"
+            team: "Bravo Team",
+            position: "Rifleman",
+            role: .soldier
         )
         
         let soldierThree = Soldier(
@@ -505,7 +571,9 @@ final class InventoryViewModel: ObservableObject {
             company: "A CO",
             platoon: "2nd PLT",
             squad: "Weapons Squad",
-            team: "Gun Team"
+            team: "Gun Team",
+            position: "Machine Gunner",
+            role: .soldier
         )
         
         soldiers = [
@@ -516,39 +584,314 @@ final class InventoryViewModel: ObservableObject {
         items = [
             InventoryItem(
                 id: UUID(),
-                itemName: "Training Rifle",
+                itemName: "M4A1 Carbine",
                 serialNumber: "WPN-1001",
                 category: .weapon,
                 status: .assigned,
                 assignedSoldierID: soldierOne.id,
                 condition: .serviceable,
                 issueDate: Date().addingTimeInterval(-86400 * 14),
-                notes: "Sample data only"
+                notes: "Sample data only",
+                quantity: nil
             ),
             InventoryItem(
                 id: UUID(),
-                itemName: "Radio",
+                itemName: "Harris AN/PRC-163",
                 serialNumber: "COM-2044",
                 category: .communication,
                 status: .unassigned,
                 assignedSoldierID: nil,
                 condition: .serviceable,
                 issueDate: nil,
-                notes: "Sample data only"
+                notes: "Sample data only",
+                quantity: nil
             ),
             InventoryItem(
                 id: UUID(),
-                itemName: "Night Vision Goggles",
+                itemName: "PVS-14",
                 serialNumber: "NVG-3302",
                 category: .nvg,
                 status: .damaged,
                 assignedSoldierID: soldierTwo.id,
                 condition: .damaged,
                 issueDate: Date().addingTimeInterval(-86400 * 7),
-                notes: "Damaged lens - sample data only"
+                notes: "Damaged lens - sample data only",
+                quantity: nil
+            ),
+            InventoryItem(
+                id: UUID(),
+                itemName: "M4A1 Magazine",
+                serialNumber: "N/A",
+                category: .other,
+                status: .unassigned,
+                assignedSoldierID: nil,
+                condition: .serviceable,
+                issueDate: nil,
+                notes: "Non-serialized sensitive item - sample data only",
+                quantity: 30
             )
         ]
         
         transactions = []
+    }
+    
+    func currentUserSoldierInfo() -> UserSoldierInformation? {
+        currentUser?.soldierInformation
+    }
+    
+    func isCurrentUser(_ soldier: Soldier) -> Bool {
+        guard let userInfo = currentUserSoldierInfo() else {
+            return false
+        }
+        
+        return soldier.firstName.lowercased() == userInfo.firstName.lowercased()
+        && soldier.lastName.lowercased() == userInfo.lastName.lowercased()
+        && soldier.company == userInfo.company
+        && soldier.platoon == userInfo.platoon
+        && soldier.squad == userInfo.squad
+        && soldier.team == userInfo.team
+    }
+    
+    func isSameCompany(_ soldier: Soldier) -> Bool {
+        guard let userInfo = currentUserSoldierInfo() else {
+            return false
+        }
+        
+        return soldier.company == userInfo.company
+    }
+    
+    func isSamePlatoon(_ soldier: Soldier) -> Bool {
+        guard let userInfo = currentUserSoldierInfo() else {
+            return false
+        }
+        
+        return soldier.company == userInfo.company
+        && soldier.platoon == userInfo.platoon
+    }
+    
+    func isSameSquad(_ soldier: Soldier) -> Bool {
+        guard let userInfo = currentUserSoldierInfo() else {
+            return false
+        }
+        
+        return soldier.company == userInfo.company
+        && soldier.platoon == userInfo.platoon
+        && soldier.squad == userInfo.squad
+    }
+    
+    func isSameTeam(_ soldier: Soldier) -> Bool {
+        guard let userInfo = currentUserSoldierInfo() else {
+            return false
+        }
+        
+        return soldier.company == userInfo.company
+        && soldier.platoon == userInfo.platoon
+        && soldier.squad == userInfo.squad
+        && soldier.team == userInfo.team
+    }
+
+    func canEditPersonnelRecord(_ soldier: Soldier) -> Bool {
+        guard let user = currentUser else {
+            return false
+        }
+        
+        switch user.role {
+        case .companyOfficer, .companyNCO:
+            return true
+            
+        case .platoonOfficer, .platoonNCO:
+            return isSamePlatoon(soldier)
+            
+        case .squadLeader:
+            return isSameSquad(soldier)
+            
+        case .teamLeader:
+            return isSameTeam(soldier)
+            
+        case .companyArmorer, .platoonArmorer, .soldier:
+            return false
+        }
+    }
+
+    func canManageAssignedItems(for soldier: Soldier) -> Bool {
+        guard let user = currentUser else {
+            return false
+        }
+        
+        switch user.role {
+        case .companyOfficer, .companyNCO:
+            return true
+            
+        case .platoonOfficer, .platoonNCO:
+            return isSamePlatoon(soldier)
+            
+        case .squadLeader:
+            return isSameSquad(soldier)
+            
+        case .teamLeader:
+            return isSameTeam(soldier)
+            
+        case .companyArmorer:
+            return isSameCompany(soldier)
+            
+        case .platoonArmorer:
+            return isSamePlatoon(soldier)
+            
+        case .soldier:
+            return isCurrentUser(soldier)
+        }
+    }
+    
+    func visibleItemsForCurrentUser() -> [InventoryItem] {
+        guard let user = currentUser else {
+            return []
+        }
+        
+        switch user.role {
+        case .companyOfficer, .companyNCO, .companyArmorer:
+            return items.filter { item in
+                guard let soldier = soldier(for: item.assignedSoldierID) else {
+                    return true
+                }
+                
+                return isSameCompany(soldier)
+            }
+            
+        case .platoonOfficer, .platoonNCO, .platoonArmorer:
+            return items.filter { item in
+                guard let soldier = soldier(for: item.assignedSoldierID) else {
+                    return false
+                }
+                
+                return isSamePlatoon(soldier)
+            }
+            
+        case .squadLeader:
+            return items.filter { item in
+                guard let soldier = soldier(for: item.assignedSoldierID) else {
+                    return false
+                }
+                
+                return isCurrentUser(soldier) || isSameSquad(soldier)
+            }
+            
+        case .teamLeader:
+            return items.filter { item in
+                guard let soldier = soldier(for: item.assignedSoldierID) else {
+                    return false
+                }
+                
+                return isCurrentUser(soldier) || isSameTeam(soldier)
+            }
+            
+        case .soldier:
+            return items.filter { item in
+                guard let soldier = soldier(for: item.assignedSoldierID) else {
+                    return false
+                }
+                
+                return isCurrentUser(soldier)
+            }
+        }
+    }
+    
+    func filteredVisibleItems(
+        searchText: String,
+        status: ItemStatus?,
+        category: ItemCategory?
+    ) -> [InventoryItem] {
+        let text = searchText.trimmed.lowercased()
+        
+        return visibleItemsForCurrentUser()
+            .filter {
+                text.isEmpty || $0.searchableText.lowercased().contains(text)
+            }
+            .filter {
+                status == nil || $0.status == status
+            }
+            .filter {
+                category == nil || $0.category == category
+            }
+            .sorted {
+                $0.itemName < $1.itemName
+            }
+    }
+    
+    func updateSoldier(
+        soldierID: UUID,
+        rank: String,
+        firstName: String,
+        lastName: String,
+        company: String,
+        platoon: String,
+        squad: String,
+        team: String,
+        position: String,
+        role: UserRole
+    ) throws {
+        guard let index = soldiers.firstIndex(where: { $0.id == soldierID }) else {
+            throw InventoryError.missingSoldier
+        }
+        
+        let existingSoldier = soldiers[index]
+        
+        guard canEditPersonnelRecord(existingSoldier) else {
+            throw InventoryError.unauthorized
+        }
+        
+        guard !rank.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Rank")
+        }
+        
+        guard !firstName.trimmed.isEmpty else {
+            throw InventoryError.emptyField("First name")
+        }
+        
+        guard !lastName.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Last name")
+        }
+        
+        guard !company.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Company")
+        }
+        
+        guard !platoon.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Platoon")
+        }
+        
+        guard !squad.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Squad")
+        }
+        
+        guard !team.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Team")
+        }
+        
+        guard !position.trimmed.isEmpty else {
+            throw InventoryError.emptyField("Position")
+        }
+        
+        guard let currentUser = currentUser else {
+            throw InventoryError.unauthorized
+        }
+        
+        let userRankLevel = RankAuthority.level(for: currentUser.soldierInformation.rank)
+        let newRankLevel = RankAuthority.level(for: rank)
+        
+        if userRankLevel > 0 && newRankLevel > userRankLevel {
+            throw InventoryError.unauthorized
+        }
+        
+        soldiers[index].rank = rank.trimmed.uppercased()
+        soldiers[index].firstName = firstName.trimmed
+        soldiers[index].lastName = lastName.trimmed
+        soldiers[index].company = company.trimmed
+        soldiers[index].platoon = platoon.trimmed
+        soldiers[index].squad = squad.trimmed
+        soldiers[index].team = team.trimmed
+        soldiers[index].position = position.trimmed
+        soldiers[index].role = role
+        
+        saveData()
     }
 }
