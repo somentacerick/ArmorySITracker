@@ -13,6 +13,7 @@ import SwiftUI
 
 enum TransactionMode: String, CaseIterable, Identifiable {
     case issue = "Issue"
+    case draw = "Draw"
     case turnIn = "Turn In"
     
     var id: String { rawValue }
@@ -27,20 +28,36 @@ struct IssueTurnInView: View {
     @State private var transactionDate = Date()
     @State private var condition: ItemCondition = .serviceable
     @State private var notes = ""
+    @State private var purpose: DrawPurpose = .training
+    @State private var turnInResult: TurnInResult = .returnedToArmory
     
     @State private var showAlert = false
     @State private var alertMessage = ""
     
     private var issueItems: [InventoryItem] {
-        viewModel.items.filter { $0.status == .unassigned }
+        viewModel.visibleItemsForCurrentUser()
+            .filter { $0.status == .unassigned }
+    }
+    
+    private var drawItems: [InventoryItem] {
+        viewModel.visibleItemsForCurrentUser()
+            .filter { $0.assignedSoldierID != nil && $0.status == .assigned }
     }
     
     private var turnInItems: [InventoryItem] {
-        viewModel.items.filter { $0.assignedSoldierID != nil }
+        viewModel.visibleItemsForCurrentUser()
+            .filter { $0.assignedSoldierID != nil && $0.status != .unassigned }
     }
     
     private var displayedItems: [InventoryItem] {
-        mode == .issue ? issueItems : turnInItems
+        switch mode {
+        case .issue:
+            return issueItems
+        case .draw:
+            return drawItems
+        case .turnIn:
+            return turnInItems
+        }
     }
     
     var body: some View {
@@ -76,12 +93,27 @@ struct IssueTurnInView: View {
                             .tag(item.id.uuidString)
                     }
                 }
+                
+                if mode == .draw {
+                    Picker("Purpose", selection: $purpose) {
+                        ForEach(DrawPurpose.allCases) { purpose in
+                            Text(purpose.rawValue).tag(purpose)
+                        }
+                    }
+                }
+                
+                if mode == .turnIn {
+                    Picker("Turn In Result", selection: $turnInResult) {
+                        ForEach(TurnInResult.allCases) { result in
+                            Text(result.rawValue).tag(result)
+                        }
+                    }
+                }
             }
             
-            if mode == .turnIn,
-               let itemID = UUID(uuidString: selectedItemID),
-               let item = viewModel.item(for: itemID),
-               let soldier = viewModel.soldier(for: item.assignedSoldierID) {
+            if let selectedItem = selectedItem,
+               let soldier = viewModel.soldier(for: selectedItem.assignedSoldierID),
+               mode != .issue {
                 Section("Current Holder") {
                     Text(soldier.displayName)
                     Text(soldier.unitLine)
@@ -108,24 +140,49 @@ struct IssueTurnInView: View {
                     .frame(minHeight: 120)
             }
             
-            Button(mode == .issue ? "Issue Item" : "Turn In Item") {
+            Button(buttonTitle) {
                 submitTransaction()
             }
             .disabled(viewModel.currentUser?.role.canManageSI != true)
         }
-        .navigationTitle("Issue / Turn In")
+        .navigationTitle("Issue / Draw / Turn In")
         .onChange(of: mode) {
-            selectedSoldierID = ""
-            selectedItemID = ""
-            notes = ""
-            condition = .serviceable
-            transactionDate = Date()
+            resetForm()
         }
         .alert("Transaction", isPresented: $showAlert) {
             Button("OK") { }
         } message: {
             Text(alertMessage)
         }
+    }
+    
+    private var selectedItem: InventoryItem? {
+        guard let itemID = UUID(uuidString: selectedItemID) else {
+            return nil
+        }
+        
+        return viewModel.item(for: itemID)
+    }
+    
+    private var buttonTitle: String {
+        switch mode {
+        case .issue:
+            return "Issue Item"
+        case .draw:
+            return "Draw Item"
+        case .turnIn:
+            return "Turn In Item"
+        }
+    }
+    
+    private func resetForm() {
+        selectedSoldierID = ""
+        selectedItemID = ""
+        notes = ""
+        condition = .serviceable
+        transactionDate = Date()
+        purpose = .training
+        turnInResult = .returnedToArmory
     }
     
     private func submitTransaction() {
@@ -158,23 +215,28 @@ struct IssueTurnInView: View {
                     date: transactionDate
                 )
                 
+            case .draw:
+                try viewModel.drawItem(
+                    itemID: itemID,
+                    purpose: purpose,
+                    condition: condition,
+                    notes: notes,
+                    date: transactionDate
+                )
+                
             case .turnIn:
                 try viewModel.turnInItem(
                     itemID: itemID,
                     condition: condition,
                     notes: notes,
-                    date: transactionDate
+                    date: transactionDate,
+                    turnInResult: turnInResult
                 )
             }
             
             alertMessage = "\(mode.rawValue) completed successfully."
             showAlert = true
-            
-            selectedSoldierID = ""
-            selectedItemID = ""
-            notes = ""
-            condition = .serviceable
-            transactionDate = Date()
+            resetForm()
             
         } catch {
             alertMessage = error.localizedDescription

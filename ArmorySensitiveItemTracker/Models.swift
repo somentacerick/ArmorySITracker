@@ -74,7 +74,6 @@ struct UserSoldierInformation: Codable, Hashable {
     var rank: String
     var firstName: String
     var lastName: String
-    var company: String
     var platoon: String
     var squad: String
     var team: String
@@ -84,7 +83,6 @@ struct UserSoldierInformation: Codable, Hashable {
         rank: String = "",
         firstName: String = "",
         lastName: String = "",
-        company: String = "",
         platoon: String = "",
         squad: String = "",
         team: String = "",
@@ -93,7 +91,6 @@ struct UserSoldierInformation: Codable, Hashable {
         self.rank = rank
         self.firstName = firstName
         self.lastName = lastName
-        self.company = company
         self.platoon = platoon
         self.squad = squad
         self.team = team
@@ -113,7 +110,7 @@ struct UserSoldierInformation: Codable, Hashable {
     }
     
     var unitLine: String {
-        let parts = [company, platoon, squad, team, position].filter {
+        let parts = [platoon, squad, team, position].filter {
             !$0.trimmed.isEmpty
         }
         
@@ -183,16 +180,6 @@ struct ArmyProfileOptions {
     ]
     
     static let allRanks = enlistedRanks + officerRanks
-    
-    static let companies = [
-        "Alpha",
-        "Bravo",
-        "Charlie",
-        "Delta",
-        "Echo",
-        "Fox",
-        "HHC"
-    ]
     
     static let platoons = [
         "1st",
@@ -338,9 +325,11 @@ enum ItemCategory: String, CaseIterable, Identifiable, Codable {
 enum ItemStatus: String, CaseIterable, Identifiable, Codable {
     case unassigned = "Unassigned"
     case assigned = "Assigned"
+    case drawn = "Drawn"
     case missing = "Missing"
     case damaged = "Damaged"
     case pendingTurnIn = "Pending Turn In"
+    case inMaintenance = "In Maintenance"
     
     var id: String { rawValue }
 }
@@ -349,14 +338,34 @@ enum ItemCondition: String, CaseIterable, Identifiable, Codable {
     case serviceable = "Serviceable"
     case needsInspection = "Needs Inspection"
     case damaged = "Damaged"
+    case repaired = "Repaired"
     
     var id: String { rawValue }
 }
 
 enum TransactionType: String, Codable {
     case issue = "Issue"
+    case draw = "Draw"
     case turnIn = "Turn In"
     case statusChange = "Status Change"
+}
+
+enum DrawPurpose: String, CaseIterable, Identifiable, Codable {
+    case training = "Training"
+    case fieldOperation = "Field Operation"
+    case range = "Range"
+    
+    var id: String { rawValue }
+}
+
+enum TurnInResult: String, CaseIterable, Identifiable, Codable {
+    case returnedToArmory = "Returned to Armory"
+    case returnedFromDraw = "Returned From Draw"
+    case missing = "Missing"
+    case damaged = "Damaged"
+    case repaired = "Repaired"
+    
+    var id: String { rawValue }
 }
 
 struct Soldier: Identifiable, Codable, Hashable, SearchableRecord {
@@ -364,7 +373,6 @@ struct Soldier: Identifiable, Codable, Hashable, SearchableRecord {
     var rank: String
     var firstName: String
     var lastName: String
-    var company: String
     var platoon: String
     var squad: String
     var team: String
@@ -376,7 +384,7 @@ struct Soldier: Identifiable, Codable, Hashable, SearchableRecord {
     }
     
     var unitLine: String {
-        let parts = [company, platoon, squad, team, position].filter {
+        let parts = [platoon, squad, team, position].filter {
             !$0.trimmed.isEmpty
         }
         
@@ -384,7 +392,7 @@ struct Soldier: Identifiable, Codable, Hashable, SearchableRecord {
     }
     
     var searchableText: String {
-        "\(rank) \(firstName) \(lastName) \(company) \(platoon) \(squad) \(team) \(position) \(role.rawValue)"
+        "\(rank) \(firstName) \(lastName) \(platoon) \(squad) \(team) \(position) \(role.rawValue)"
     }
 }
 
@@ -415,7 +423,7 @@ struct InventoryItem: Identifiable, Codable, Hashable, SearchableRecord {
     var symbolName: String {
         switch category {
         case .weapon:
-            return "gun"
+            return "fire"
         case .optic:
             return "eye"
         case .communication:
@@ -436,6 +444,8 @@ struct TransactionRecord: Identifiable, Codable {
     var date: Date
     var condition: ItemCondition
     var notes: String
+    var performedBy: String?
+    var purpose: DrawPurpose?
 }
 
 extension Date {

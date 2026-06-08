@@ -21,7 +21,6 @@ struct ProfileView: View {
     @State private var rank = ""
     @State private var firstName = ""
     @State private var lastName = ""
-    @State private var company = ""
     @State private var platoon = ""
     @State private var squad = ""
     @State private var team = ""
@@ -61,13 +60,6 @@ struct ProfileView: View {
             }
             
             Section("Unit Information") {
-                Picker("Company", selection: $company) {
-                    Text("Select Company").tag("")
-                    
-                    ForEach(ArmyProfileOptions.companies, id: \.self) { company in
-                        Text(company).tag(company)
-                    }
-                }
                 
                 Picker("Platoon", selection: $platoon) {
                     Text("Select Platoon").tag("")
@@ -156,7 +148,7 @@ struct ProfileView: View {
     }
     
     private var unitPreview: String {
-        let parts = [company, platoon, squad, team, position].filter {
+        let parts = [platoon, squad, team, position].filter {
             !$0.trimmed.isEmpty
         }
         
@@ -178,7 +170,6 @@ struct ProfileView: View {
         rank = user.soldierInformation.rank
         firstName = user.soldierInformation.firstName
         lastName = user.soldierInformation.lastName
-        company = user.soldierInformation.company
         platoon = user.soldierInformation.platoon
         squad = user.soldierInformation.squad
         team = user.soldierInformation.team
@@ -211,7 +202,6 @@ struct ProfileView: View {
                 rank: rank,
                 firstName: firstName,
                 lastName: lastName,
-                company: company,
                 platoon: platoon,
                 squad: squad,
                 team: team,

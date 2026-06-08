@@ -233,6 +233,16 @@ struct TransactionRow: View {
                     .font(.caption)
             }
             
+            if let performedBy = transaction.performedBy {
+                Text("Performed by: \(performedBy)")
+                    .font(.caption)
+            }
+            
+            if let purpose = transaction.purpose {
+                Text("Purpose: \(purpose.rawValue)")
+                    .font(.caption)
+            }
+                
             Text("Condition: \(transaction.condition.rawValue)")
                 .font(.caption)
             

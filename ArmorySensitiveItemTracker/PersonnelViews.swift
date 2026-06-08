@@ -67,7 +67,6 @@ struct SoldierDetailView: View {
             List {
                 Section("Soldier Information") {
                     Text(soldier.displayName)
-                    Text("Company: \(soldier.company)")
                     Text("Platoon: \(soldier.platoon)")
                     Text("Squad: \(soldier.squad)")
                     Text("Team: \(soldier.team)")
@@ -158,7 +157,6 @@ struct AddSoldierView: View {
     @State private var rank = ""
     @State private var firstName = ""
     @State private var lastName = ""
-    @State private var company = ""
     @State private var platoon = ""
     @State private var squad = ""
     @State private var team = ""
@@ -192,13 +190,6 @@ struct AddSoldierView: View {
             }
             
             Section("Unit Information") {
-                Picker("Company", selection: $company) {
-                    Text("Select Company").tag("")
-                    
-                    ForEach(ArmyProfileOptions.companies, id: \.self) { company in
-                        Text(company).tag(company)
-                    }
-                }
                 
                 Picker("Platoon", selection: $platoon) {
                     Text("Select Platoon").tag("")
@@ -239,7 +230,6 @@ struct AddSoldierView: View {
                         rank: rank,
                         firstName: firstName,
                         lastName: lastName,
-                        company: company,
                         platoon: platoon,
                         squad: squad,
                         team: team,
@@ -278,7 +268,6 @@ struct EditSoldierView: View {
     @State private var rank = ""
     @State private var firstName = ""
     @State private var lastName = ""
-    @State private var company = ""
     @State private var platoon = ""
     @State private var squad = ""
     @State private var team = ""
@@ -314,11 +303,6 @@ struct EditSoldierView: View {
             }
             
             Section("Unit Information") {
-                Picker("Company", selection: $company) {
-                    ForEach(ArmyProfileOptions.companies, id: \.self) {
-                        Text($0).tag($0)
-                    }
-                }
                 
                 Picker("Platoon", selection: $platoon) {
                     ForEach(ArmyProfileOptions.platoons, id: \.self) {
@@ -376,7 +360,6 @@ struct EditSoldierView: View {
         rank = soldier.rank
         firstName = soldier.firstName
         lastName = soldier.lastName
-        company = soldier.company
         platoon = soldier.platoon
         squad = soldier.squad
         team = soldier.team
@@ -391,7 +374,6 @@ struct EditSoldierView: View {
                 rank: rank,
                 firstName: firstName,
                 lastName: lastName,
-                company: company,
                 platoon: platoon,
                 squad: squad,
                 team: team,

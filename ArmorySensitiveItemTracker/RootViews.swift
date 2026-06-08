@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 
 //Controls app floww
@@ -15,12 +16,18 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject var viewModel: InventoryViewModel
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
-        if viewModel.currentUser == nil {
-            LoginView()
-        } else {
-            MainTabView()
+        Group {
+            if viewModel.currentUser == nil {
+                LoginView()
+            } else {
+                MainTabView()
+            }
+        }
+        .onAppear {
+            viewModel.configureSwiftData(context: modelContext)
         }
     }
 }

@@ -260,6 +260,17 @@ struct ItemDetailView: View {
                             }
                         }
                         
+                        if viewModel.currentUser?.role == .companyArmorer {
+                            Button("Send to Maintenance") {
+                                runAction {
+                                    try viewModel.sendItemToMaintenance(
+                                        itemID: item.id,
+                                        notes: "Sent to maintenance from item detail screen."
+                                    )
+                                }
+                            }
+                        }
+                        
                         NavigationLink("Assign / Turn In From Form") {
                             IssueTurnInView()
                         }
@@ -334,10 +345,6 @@ struct AddItemView: View {
                 
                 if category == .other {
                     Stepper("Quantity: \(quantity)", value: $quantity, in: 1...999)
-                    
-                    Text("Non serialized sensitive items use quantity instead of serial number.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 } else {
                     TextField("Serial Number", text: $serialNumber)
                 }

@@ -16,6 +16,7 @@
 		A96245322FD4DAEE00BAC921 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245312FD4DAEE00BAC921 /* Models.swift */; };
 		A96245342FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */; };
 		A96245382FD6020D00BAC921 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A96245372FD6020D00BAC921 /* ProfileView.swift */; };
+		A962453C2FD657F000BAC921 /* SwiftDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A962453B2FD657F000BAC921 /* SwiftDataStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		A96245312FD4DAEE00BAC921 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmorySensitiveItemTrackerApp.swift; sourceTree = "<group>"; };
 		A96245372FD6020D00BAC921 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		A962453B2FD657F000BAC921 /* SwiftDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -54,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				A96245252FD4D9CE00BAC921 /* InventoryViewModel.swift */,
+				A962453B2FD657F000BAC921 /* SwiftDataStore.swift */,
 				A96245332FD4DC4000BAC921 /* ArmorySensitiveItemTrackerApp.swift */,
 				A96245272FD4DA7100BAC921 /* RootViews.swift */,
 				A96245372FD6020D00BAC921 /* ProfileView.swift */,
@@ -151,6 +154,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A96245282FD4DA7100BAC921 /* RootViews.swift in Sources */,
+				A962453C2FD657F000BAC921 /* SwiftDataStore.swift in Sources */,
 				A96245382FD6020D00BAC921 /* ProfileView.swift in Sources */,
 				A96245262FD4D9CE00BAC921 /* InventoryViewModel.swift in Sources */,
 				A962452E2FD4DAD100BAC921 /* IssueTurnInView.swift in Sources */,
